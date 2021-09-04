@@ -14,7 +14,7 @@ def main():
     client.connect(("127.0.0.1", 4444))
     packet = Packet(opcode=1)
     print("connected")
-    client.send(pickle.dumps(packet))
+    client.sendall(pickle.dumps(packet))
     print("sent packet with opcode 14")
     client.close()
 

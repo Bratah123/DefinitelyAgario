@@ -34,3 +34,27 @@ class Packet(BytesIO):
 
     def decode_int(self):
         return unpack('I', self.read(4))[0]
+
+    def encode_string(self, string):
+        self.write(pack('H', len(string)))
+
+        for ch in string:
+            self.write(ch.encode())
+
+        return self
+
+    def decode_string(self) -> str:
+        length = self.decode_short()
+        string = ""
+
+        for _ in range(length):
+            string += self.read(1).decode()
+
+        return string
+
+    def encode_short(self, value):
+        self.write(pack('H', value))
+        return self
+
+    def decode_short(self):
+        return unpack('H', self.read(2))[0]

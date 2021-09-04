@@ -30,7 +30,7 @@ class ServerClient:
     def send_packet(self, packet):
         try:
             print(f"[SEND] Sending Packet with opcode:", packet.opcode)
-            self._socket.send(pickle.dumps(packet))
+            self._socket.sendall(pickle.dumps(packet))
         except Exception as e:
             print(f"[ERROR] Connection to connection {self._addr} most likely lost:", e)
             self._is_online = False
