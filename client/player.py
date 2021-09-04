@@ -73,22 +73,26 @@ class Player(Circle):
 
     def draw_game(self):
         self.window().fill((255, 255, 255))
-        self.draw_self(self.window())
+        if not self._is_dead:
+            self.draw_self(self.window())
         for player in self._players:
             if player.is_dead:
                 continue
             if self.contains(player):
                 player.is_dead = True
+                packet = Packet(opcode=SendOps.PLAYER_EAT.value)
+                packet.encode_int(player.player_id)
+                self.send_packet(packet)
+                self.radius += player.radius
                 continue
             player.draw_self(self.window())
         for blob in self._blobs:
             blob.draw_self(self.window())
             if self.contains(blob):
-                self.remove_blob_by_id(blob.blob_id)
-                self.radius += blob.radius
                 packet = Packet(opcode=SendOps.BLOB_EAT.value)
                 packet.encode_int(blob.blob_id)
                 self.send_packet(packet)
+                self.radius += blob.radius
         pygame.display.update()
         packet = Packet(opcode=SendOps.USER_MOVE.value)
         self.encode(packet)
@@ -110,6 +114,12 @@ class Player(Circle):
         for player in self.players:
             if player.player_id == player_id:
                 self.blobs.remove(player)
+                break
+
+    def make_player_dead_by_id(self, player_id):
+        for player in self.players:
+            if player.player_id == player_id:
+                player.is_dead = True
                 break
 
     def encode(self, packet):

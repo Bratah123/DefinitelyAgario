@@ -85,3 +85,24 @@ class ServerPackets:
     def handle_on_blob_eat(client, packet):
         blob_id = packet.decode_int()
         client.player.remove_blob_by_id(blob_id)
+
+    @staticmethod
+    @handler(opcode=RecvOps.ON_PLAYER_EAT)
+    def handle_on_player_eat(client, packet):
+        player_id = packet.decode_int()
+        if player_id == client.player.player_id:
+            client.player.is_dead = True
+        client.player.make_player_dead_by_id(player_id)
+
+    @staticmethod
+    @handler(opcode=RecvOps.ON_PLAYER_MODIFIED)
+    def handle_on_player_modified(client, packet):
+        x = packet.decode_int()
+        y = packet.decode_int()
+        radius = packet.decode_int()
+        client.player.x = x
+        client.player.y = y
+        client.player.radius = radius
+        client.player.is_dead = False
+        for player in client.player.players:
+            player.is_dead = False

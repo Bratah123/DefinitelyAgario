@@ -7,3 +7,5 @@ class RecvOps(Enum):
     ON_REMOVE_USER = 3
     ON_BLOB_INIT = 4
     ON_BLOB_EAT = 5
+    ON_PLAYER_EAT = 6
+    ON_PLAYER_MODIFIED = 7

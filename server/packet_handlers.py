@@ -71,7 +71,7 @@ class GamePackets:
                 break
         packet = Packet(opcode=SendOps.ON_BLOB_EAT.value)
         packet.encode_int(blob_id)
-        client.broadcast_packet_except_self(packet)
+        client.broadcast_packet(packet)
         if len(BLOBS) == 0:  # If no more blobs on the field we reset the game
             for i in range(BLOB_AMOUNT):
                 BLOBS.append(Blob(i))
@@ -79,4 +79,20 @@ class GamePackets:
             packet.encode_int(len(BLOBS))
             for blob in BLOBS:
                 blob.encode(packet)
+            for cli in client.clients:
+                modified_packet = Packet(opcode=SendOps.ON_PLAYER_MODIFIED.value)
+                x, y = random.randint(0, 1280), random.randint(0, 720)
+                radius = 10
+                modified_packet.encode_int(x)
+                modified_packet.encode_int(y)
+                modified_packet.encode_int(radius)
+                cli.send_packet(modified_packet)
             client.broadcast_packet(packet)
+
+    @staticmethod
+    @handler(opcode=RecvOps.PLAYER_EAT)
+    def handle_player_eat(client, in_packet):
+        player_id = in_packet.decode_int()
+        packet = Packet(opcode=SendOps.ON_PLAYER_EAT.value)
+        packet.encode_int(player_id)
+        client.broadcast_packet_except_self(packet)
