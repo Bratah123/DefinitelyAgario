@@ -27,6 +27,10 @@ class Server:
                 self._packet_handlers[member.opcode] = member.func
             # Values are the opcodes, key is the function() to be ran
 
+    @property
+    def clients(self):
+        return self._clients
+
     def start(self):
         try:
             print("[INFO] Starting server...")
@@ -51,6 +55,7 @@ class Server:
             server_client = ServerClient(conn, addr, handlers=self._packet_handlers)
             self._id_gen += 1
             server_client.id = self._id_gen
+            server_client.clients = self._clients
             self._clients.append(server_client)
             accept_thread = Thread(target=server_client.init_listener)
             accept_thread.start()

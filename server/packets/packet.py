@@ -22,7 +22,7 @@ class Packet(BytesIO):
         self._opcode = op
 
     def encode_byte(self, val):
-        self.write(pack('b', val))
+        self.write(pack('B', val))
         return self
 
     def encode_int(self, val):
@@ -33,7 +33,7 @@ class Packet(BytesIO):
         return self.read(1)[0]
 
     def decode_int(self):
-        return unpack('I', self.read(4))[0]
+        return unpack('i', self.read(4))[0]
 
     def encode_string(self, string):
         self.write(pack('H', len(string)))
