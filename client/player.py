@@ -24,6 +24,10 @@ class Player(Circle):
     def player_id(self, new_plr_id):
         self._player_id = new_plr_id
 
+    @property
+    def players(self):
+        return self._players
+
     def velocity(self):
         # TODO: figure out an algo to make the player slower if they are bigger
         return abs(self._velocity)
@@ -42,11 +46,6 @@ class Player(Circle):
         if keys_pressed[pygame.K_RIGHT]:
             self.x += self._velocity
 
-        # notify the server that this player moved
-        packet = Packet(opcode=SendOps.USER_MOVE.value)
-        self.encode(packet)
-        self.send_packet(packet)
-
     def send_packet(self, packet):
         self._client.send_packet(packet)
 
@@ -56,6 +55,9 @@ class Player(Circle):
         for player in self._players:
             player.draw_self(self.window())
         pygame.display.update()
+        packet = Packet(opcode=SendOps.USER_MOVE.value)
+        self.encode(packet)
+        self.send_packet(packet)
 
     def encode(self, packet):
         packet.encode_int(self._client.client_id)

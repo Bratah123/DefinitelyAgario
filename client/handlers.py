@@ -29,11 +29,13 @@ class ServerPackets:
         y = packet.decode_int()
         color = (packet.decode_byte(), packet.decode_byte(), packet.decode_byte())
         player = Player(x, y, radius, color, client)
+        player.player_id = client_id
         client.player = player
 
     @staticmethod
     @handler(opcode=RecvOps.ON_USER_MOVE)
     def handle_on_user_move(client, packet: Packet):
+        client_id = packet.decode_int()
         x = packet.decode_int()
         y = packet.decode_int()
         radius = packet.decode_int()
@@ -41,5 +43,23 @@ class ServerPackets:
         g = packet.decode_byte()
         b = packet.decode_byte()
         color = (r, g, b)
-        pos = (x, y)
-        client.player.draw_remote_player(color, pos, radius)
+        for player in client.player.players:
+            if player.player_id == client_id:
+                player.x = x
+                player.y = y
+                player.radius = radius
+                player.color = color
+                break
+        else:
+            new_player = Player(x, y, radius, color, None)
+            new_player.player_id = client_id
+            client.player.players.append(new_player)
+
+    @staticmethod
+    @handler(opcode=RecvOps.ON_REMOVE_USER)
+    def handle_on_remove_user(client, packet):
+        client_id = packet.decode_int()
+        for player in client.player.players:
+            if player.player_id == client_id:
+                client.player.players.remove(player)
+                break

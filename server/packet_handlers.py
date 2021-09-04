@@ -45,6 +45,7 @@ class GamePackets:
         r, g, b = in_packet.decode_byte(), in_packet.decode_byte(), in_packet.decode_byte()
 
         packet = Packet(opcode=SendOps.ON_USER_MOVE.value)  # we send this to packet to the other players in the game
+        packet.encode_int(client_id)
         packet.encode_int(x)
         packet.encode_int(y)
         packet.encode_int(radius)

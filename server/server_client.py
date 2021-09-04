@@ -1,5 +1,8 @@
 import pickle
 
+from packets.packet import Packet
+from server_opcodes.send_opcodes import SendOps
+
 SPAM_PACKETS = [
     2,  # User Move
 ]
@@ -48,6 +51,11 @@ class ServerClient:
             self._socket.sendall(pickle.dumps(packet))
         except Exception as e:
             print(f"[ERROR] Connection to {self._addr} most likely lost:", e)
+            packet = Packet(opcode=SendOps.ON_REMOVE_USER.value)
+            packet.encode_int(self.id)
+            for client in self._clients:
+                if client.id != self.id:
+                    client.send_packet(packet)
             self._is_online = False
             self._socket.shutdown(1)
             self._clients.remove(self)
@@ -57,9 +65,14 @@ class ServerClient:
             # We are receiving the Packet class back by pickled data from the connection
             try:
                 buffer = self._socket.recv(4096)
-            except ConnectionResetError:
+            except ConnectionResetError or ConnectionAbortedError:
                 print(f"[ERROR] Lost connection to {self._addr}")
                 self._is_online = False
+                packet = Packet(opcode=SendOps.ON_REMOVE_USER.value)
+                packet.encode_int(self.id)
+                for client in self._clients:
+                    if client.id != self.id:
+                        client.send_packet(packet)
                 break
             if not buffer:
                 continue

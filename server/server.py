@@ -6,7 +6,7 @@ import inspect
 import socket
 from threading import Thread
 
-from connection.server_client import ServerClient
+from server_client import ServerClient
 from packet_handlers import GamePackets, PacketHandler
 from server_constants import SERVER_IP, SERVER_PORT, MAX_CONNECTIONS
 
