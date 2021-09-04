@@ -1,3 +1,4 @@
+from blob import Blob
 from player import Player
 from packets.packet import Packet
 from packets.recv_opcodes import RecvOps
@@ -63,3 +64,18 @@ class ServerPackets:
             if player.player_id == client_id:
                 client.player.players.remove(player)
                 break
+
+    @staticmethod
+    @handler(opcode=RecvOps.ON_BLOB_INIT)
+    def handle_on_blob_init(client, packet):
+        blob_amt = packet.decode_int()
+        for i in range(blob_amt):
+            blob_id = packet.decode_int()
+            x = packet.decode_int()
+            y = packet.decode_int()
+            radius = packet.decode_int()
+            r = packet.decode_byte()
+            g = packet.decode_byte()
+            b = packet.decode_byte()
+            blob = Blob(blob_id, x, y, radius, (r, g, b))
+            client.player.blobs.append(blob)

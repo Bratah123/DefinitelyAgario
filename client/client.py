@@ -6,7 +6,6 @@ import inspect
 import pickle
 import socket
 import sys
-import time
 from threading import Thread
 
 import pygame
@@ -70,7 +69,12 @@ class Client:
 
     def receive(self):
         while self._is_online:
-            buffer = self._client_socket.recv(4096)
+            try:
+                buffer = self._client_socket.recv(4096)
+            except ConnectionAbortedError:
+                print("[ERROR] Connection aborted by client")
+                self._is_online = False
+                break
             if not buffer:
                 continue
             try:
@@ -82,6 +86,7 @@ class Client:
                 print("[RECV] Packet Received opcode:", packet.opcode)
             self.dispatch_packet(packet)
         self._client_socket.close()
+        sys.exit()
 
     def dispatch_packet(self, packet):
         packet.seek(0)

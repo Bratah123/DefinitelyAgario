@@ -1,6 +1,7 @@
 import random
 
 from packets.packet import Packet
+from server_constants import BLOBS
 from server_opcodes.send_opcodes import SendOps
 from server_opcodes.recv_opcodes import RecvOps
 
@@ -35,6 +36,11 @@ class GamePackets:
         packet.encode_byte(green)  # G
         packet.encode_byte(blue)  # B
         client.send_packet(packet)
+        packet = Packet(opcode=SendOps.ON_BLOB_INIT.value)
+        packet.encode_int(len(BLOBS))
+        for blob in BLOBS:
+            blob.encode(packet)
+        client.send_packet(packet)
 
     @staticmethod
     @handler(opcode=RecvOps.USER_MOVE)
@@ -53,3 +59,8 @@ class GamePackets:
         packet.encode_byte(g)
         packet.encode_byte(b)
         client.broadcast_packet_except_self(packet)
+
+    @staticmethod
+    @handler(opcode=RecvOps.BLOB_EAT)
+    def handle_blob_eat(client, packet):
+        pass

@@ -6,9 +6,10 @@ import inspect
 import socket
 from threading import Thread
 
+from game_object import Blob
 from server_client import ServerClient
 from packet_handlers import GamePackets, PacketHandler
-from server_constants import SERVER_IP, SERVER_PORT, MAX_CONNECTIONS
+from server_constants import SERVER_IP, SERVER_PORT, MAX_CONNECTIONS, BLOB_AMOUNT, BLOBS
 
 
 class Server:
@@ -38,6 +39,8 @@ class Server:
             self._server_socket.listen(self._max_conn)
             print("[INFO] Server successfully started up")
             print(f"[INFO] Listening for connections on port: {self._port}")
+            for i in range(BLOB_AMOUNT):
+                BLOBS.append(Blob(i))
             self.on_connection()
         except Exception as e:
             print("[ERROR] Error trying to start server:", e)
