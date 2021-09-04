@@ -94,3 +94,7 @@ class ServerClient:
         for client in self.clients:
             if client.id != self.id:
                 client.send_packet(packet)
+
+    def broadcast_packet(self, packet):
+        for client in self.clients:
+            client.send_packet(packet)

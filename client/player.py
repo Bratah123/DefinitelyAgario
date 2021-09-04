@@ -18,6 +18,7 @@ class Player(Circle):
         self._velocity = velocity
         self._players = []
         self._blobs = []
+        self._is_dead = False
 
     @property
     def player_id(self):
@@ -35,27 +36,37 @@ class Player(Circle):
     def blobs(self):
         return self._blobs
 
+    @property
+    def is_dead(self):
+        return self._is_dead
+
+    @is_dead.setter
+    def is_dead(self, dead):
+        self._is_dead = dead
+
     def velocity(self):
-        # TODO: figure out an algo to make the player slower if they are bigger
-        return abs(self._velocity)
+        vel = self._velocity - (self.radius // 50)
+        return vel if vel > 0 else 1
 
     def window(self):
         return self._client.window.window
 
     def listen_input_event(self):
         keys_pressed = pygame.key.get_pressed()
+        if self._is_dead:
+            return
         if keys_pressed[pygame.K_UP]:
             if not self.y - self._velocity <= 0:
-                self.y -= self._velocity
+                self.y -= self.velocity()
         if keys_pressed[pygame.K_DOWN]:
             if not self.y + self._velocity >= self._client.window.height:
-                self.y += self._velocity
+                self.y += self.velocity()
         if keys_pressed[pygame.K_LEFT]:
             if not self.x - self._velocity <= 0:
-                self.x -= self._velocity
+                self.x -= self.velocity()
         if keys_pressed[pygame.K_RIGHT]:
             if not self.x - self._velocity >= self._client.window.width:
-                self.x += self._velocity
+                self.x += self.velocity()
 
     def send_packet(self, packet):
         self._client.send_packet(packet)
@@ -64,13 +75,20 @@ class Player(Circle):
         self.window().fill((255, 255, 255))
         self.draw_self(self.window())
         for player in self._players:
+            if player.is_dead:
+                continue
             if self.contains(player):
-                print("Player eating player")
+                player.is_dead = True
+                continue
             player.draw_self(self.window())
         for blob in self._blobs:
             blob.draw_self(self.window())
             if self.contains(blob):
-                print("Player eating blob")
+                self.remove_blob_by_id(blob.blob_id)
+                self.radius += blob.radius
+                packet = Packet(opcode=SendOps.BLOB_EAT.value)
+                packet.encode_int(blob.blob_id)
+                self.send_packet(packet)
         pygame.display.update()
         packet = Packet(opcode=SendOps.USER_MOVE.value)
         self.encode(packet)
@@ -81,6 +99,18 @@ class Player(Circle):
         if self.radius > (distance + circle.radius):
             return True
         return False
+
+    def remove_blob_by_id(self, blob_id):
+        for blob in self.blobs:
+            if blob.blob_id == blob_id:
+                self.blobs.remove(blob)
+                break
+
+    def remove_player_by_id(self, player_id):
+        for player in self.players:
+            if player.player_id == player_id:
+                self.blobs.remove(player)
+                break
 
     def encode(self, packet):
         packet.encode_int(self._client.client_id)

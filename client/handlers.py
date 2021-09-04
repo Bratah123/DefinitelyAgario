@@ -79,3 +79,9 @@ class ServerPackets:
             b = packet.decode_byte()
             blob = Blob(blob_id, x, y, radius, (r, g, b))
             client.player.blobs.append(blob)
+
+    @staticmethod
+    @handler(opcode=RecvOps.ON_BLOB_EAT)
+    def handle_on_blob_eat(client, packet):
+        blob_id = packet.decode_int()
+        client.player.remove_blob_by_id(blob_id)

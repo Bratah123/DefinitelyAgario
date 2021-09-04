@@ -60,7 +60,7 @@ class Client:
     def send_packet(self, packet):
         try:
             if packet.opcode not in SPAM_PACKETS:
-                print("[INFO] Sending packet to server")
+                print("[INFO] Sending packet to server opcode:", packet.opcode)
             self._client_socket.sendall(pickle.dumps(packet))
         except Exception as e:
             print("[ERROR] Server is offline:", e)

@@ -6,3 +6,4 @@ class RecvOps(Enum):
     ON_USER_MOVE = 2
     ON_REMOVE_USER = 3
     ON_BLOB_INIT = 4
+    ON_BLOB_EAT = 5

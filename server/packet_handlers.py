@@ -1,7 +1,8 @@
 import random
 
 from packets.packet import Packet
-from server_constants import BLOBS
+from game_object import Blob
+from server_constants import BLOBS, BLOB_AMOUNT
 from server_opcodes.send_opcodes import SendOps
 from server_opcodes.recv_opcodes import RecvOps
 
@@ -27,7 +28,7 @@ class GamePackets:
         # Send the player some Player() info
         packet = Packet(opcode=SendOps.ON_USER_REQ_GAME_LOGIN.value)
         packet.encode_int(client.id)
-        packet.encode_int(20)  # starting radius
+        packet.encode_int(10)  # starting radius
         start_x, start_y = random.randint(0, 1280), random.randint(0, 720)
         packet.encode_int(start_x)
         packet.encode_int(start_y)
@@ -62,5 +63,20 @@ class GamePackets:
 
     @staticmethod
     @handler(opcode=RecvOps.BLOB_EAT)
-    def handle_blob_eat(client, packet):
-        pass
+    def handle_blob_eat(client, in_packet):
+        blob_id = in_packet.decode_int()
+        for blob in BLOBS:
+            if blob.blob_id == blob_id:
+                BLOBS.remove(blob)
+                break
+        packet = Packet(opcode=SendOps.ON_BLOB_EAT.value)
+        packet.encode_int(blob_id)
+        client.broadcast_packet_except_self(packet)
+        if len(BLOBS) == 0:  # If no more blobs on the field we reset the game
+            for i in range(BLOB_AMOUNT):
+                BLOBS.append(Blob(i))
+            packet = Packet(opcode=SendOps.ON_BLOB_INIT.value)
+            packet.encode_int(len(BLOBS))
+            for blob in BLOBS:
+                blob.encode(packet)
+            client.broadcast_packet(packet)
